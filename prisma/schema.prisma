@@ -5,11 +5,16 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  // Generate the client into the repo so it's available during build/deploy.
+  // The path is relative to the `prisma/` directory.
+  output = "../generated/prisma"
+  // Ensure CommonJS output so the generated client can be required in CJS runtimes.
+  moduleFormat = "cjs"
 }
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["contacts_db"]
 }
 
 enum ContactStatus {
@@ -18,6 +23,8 @@ enum ContactStatus {
   IN_PROGRESS
   RESOLVED
   SPAM
+
+  @@schema("contacts_db")
 }
 
 model ContactMessage {
@@ -37,4 +44,5 @@ model ContactMessage {
   @@index([applicationId, status])
   @@index([email])
   @@index([createdAt])
+  @@schema("contacts_db")
 }
