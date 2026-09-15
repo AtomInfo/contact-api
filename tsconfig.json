@@ -17,9 +17,17 @@
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
+    "types": ["node", "jest"],
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
   }
+  ,
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "prisma/**/*.ts",
+    "generated/**/*.ts"
+  ]
 }
