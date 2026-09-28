@@ -117,12 +117,12 @@ Contact API
 
 Admin authentication is required for contact management endpoints.
 
-* [ ] `POST /auth/login` — Admin login
-* [ ] `POST /auth/refresh` — Refresh access token
-* [ ] `POST /auth/logout` — Logout
-* [ ] `GET /auth/me` — Get authenticated admin
+* [x] `POST /auth/login` — Admin login (returns `{ accessToken, refreshToken, tokenType, expiresIn }`)
+* [x] `POST /auth/refresh` — Refresh access token (body `{ refreshToken }`; rotates the refresh token)
+* [x] `POST /auth/logout` — Logout (body `{ refreshToken }`; revokes it, returns 204)
+* [x] `GET /auth/me` — Get authenticated admin
 
-Protect:
+Protected with `Authorization: Bearer <accessToken>` (`AdminAuthGuard`):
 
 ```text
 GET    /contacts
@@ -130,6 +130,37 @@ GET    /contacts/:id
 PATCH  /contacts/:id
 DELETE /contacts/:id
 ```
+
+`POST /contacts` stays public.
+
+### How it works
+
+* Access tokens: HS256 JWTs, 15 minutes by default. Every request re-checks that the admin still exists and is active.
+* Refresh tokens: opaque random strings, stored only as SHA-256 hashes in `AdminRefreshToken`. Each refresh revokes the old token. Replaying a revoked token revokes all of that admin's sessions.
+* Passwords: bcrypt with cost 12. Unknown emails still run a bcrypt comparison so they can't be detected by timing.
+
+### Environment
+
+| Variable | Required | Default |
+| --- | --- | --- |
+| `ADMIN_JWT_SECRET` | yes, at least 32 characters (the app won't start without it) | none |
+| `ADMIN_ACCESS_TOKEN_TTL_SECONDS` | no | `900` |
+| `ADMIN_REFRESH_TOKEN_TTL_DAYS` | no | `7` |
+
+Generate a secret: `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`
+
+### Creating an admin
+
+```bash
+ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='at-least-12-chars' ADMIN_NAME='You' pnpm admin:create
+```
+
+Running it for an existing email resets the password and reactivates the account.
+
+### Follow-ups
+
+* [ ] Rate-limit `POST /auth/login` (needs `trust proxy` configured for Vercel first, so limits apply per client IP)
+* [ ] Periodically delete expired and revoked refresh tokens
 
 ---
 
@@ -157,7 +188,7 @@ DELETE /contacts/:id
 * [ ] Configure rate limiting
 * [ ] Add request size limits
 * [ ] Sanitize/validate metadata
-* [ ] Protect admin endpoints
+* [x] Protect admin endpoints
 * [ ] Secure API keys
 * [ ] Never store API keys in plain text
 * [ ] Add structured application logging
@@ -210,14 +241,14 @@ Swagger endpoint:
 * [ ] Test invalid API key
 * [ ] Test inactive application
 * [ ] Test missing API key
-* [ ] Test admin authentication
-* [ ] Test protected endpoints
+* [x] Test admin authentication
+* [x] Test protected endpoints
 
 ### Security
 
 * [ ] Test rate limiting
 * [ ] Test oversized requests
-* [ ] Test unauthorized access
+* [x] Test unauthorized access
 * [x] Test malformed requests
 
 ---
@@ -263,7 +294,7 @@ These are intentionally **not part of V1**:
 
 ### Should Have
 
-* [ ] Admin authentication
+* [x] Admin authentication
 * [ ] Email notifications
 * [ ] API key rotation
 * [ ] Structured logging

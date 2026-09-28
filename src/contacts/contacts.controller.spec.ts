@@ -1,3 +1,4 @@
+import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { Test, TestingModule } from '@nestjs/testing';
 
 jest.mock('../prisma/client', () => ({
@@ -9,6 +10,7 @@ jest.mock('../prisma/client', () => ({
   },
 }));
 
+import { AdminAuthGuard } from '../auth/admin-auth.guard';
 import { ContactsController } from './contacts.controller';
 import { ContactsService } from './contacts.service';
 import { CreateContactDto } from './dto/create-contact.dto';
@@ -40,7 +42,10 @@ describe('ContactsController', () => {
           },
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(AdminAuthGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<ContactsController>(ContactsController);
     service =
@@ -160,5 +165,25 @@ describe('ContactsController', () => {
 
     await expect(controller.remove('contact-1')).resolves.toEqual(item);
     expect(service.remove).toHaveBeenCalledWith('contact-1');
+  });
+
+  describe('route protection', () => {
+    const guardsOf = (method: keyof ContactsController) =>
+      Reflect.getMetadata(
+        GUARDS_METADATA,
+        Object.getOwnPropertyDescriptor(ContactsController.prototype, method)!
+          .value,
+      ) as unknown[] | undefined;
+
+    it.each(['findAll', 'findOne', 'update', 'remove'] as const)(
+      'should require admin auth for %s',
+      (method) => {
+        expect(guardsOf(method)).toEqual([AdminAuthGuard]);
+      },
+    );
+
+    it('should leave contact submission public', () => {
+      expect(guardsOf('create')).toBeUndefined();
+    });
   });
 });
