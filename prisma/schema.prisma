@@ -4,10 +4,10 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
+  provider     = "prisma-client"
   // Generate the client into the repo so it's available during build/deploy.
   // The path is relative to the `prisma/` directory.
-  output = "../generated/prisma"
+  output       = "../generated/prisma"
   // Ensure CommonJS output so the generated client can be required in CJS runtimes.
   moduleFormat = "cjs"
 }
@@ -44,5 +44,33 @@ model ContactMessage {
   @@index([applicationId, status])
   @@index([email])
   @@index([createdAt])
+  @@schema("contacts_db")
+}
+
+model Admin {
+  id            String              @id @default(cuid())
+  email         String              @unique
+  name          String?
+  passwordHash  String
+  isActive      Boolean             @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  refreshTokens AdminRefreshToken[]
+
+  @@schema("contacts_db")
+}
+
+// Refresh tokens are opaque random strings; only their SHA-256 hash is stored.
+model AdminRefreshToken {
+  id        String    @id @default(cuid())
+  adminId   String
+  admin     Admin     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([adminId])
   @@schema("contacts_db")
 }
