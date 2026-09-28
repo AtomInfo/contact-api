@@ -6,10 +6,11 @@ describe('bootstrap', () => {
 
   it('creates the Nest application and listens on the default port', async () => {
     const listen = jest.fn().mockResolvedValue(undefined);
+    const useGlobalPipes = jest.fn();
 
     jest.doMock('@nestjs/core', () => ({
       NestFactory: {
-        create: jest.fn().mockResolvedValue({ listen }),
+        create: jest.fn().mockResolvedValue({ listen, useGlobalPipes }),
       },
     }));
 
@@ -31,6 +32,14 @@ describe('bootstrap', () => {
       await Promise.resolve();
 
       expect(NestFactory.create).toHaveBeenCalledWith(AppModule);
+      expect(useGlobalPipes).toHaveBeenCalledWith(
+        expect.objectContaining({
+          validatorOptions: expect.objectContaining({
+            whitelist: true,
+            forbidNonWhitelisted: true,
+          }),
+        }),
+      );
       expect(listen).toHaveBeenCalledWith(process.env.PORT ?? 3000);
     });
   });

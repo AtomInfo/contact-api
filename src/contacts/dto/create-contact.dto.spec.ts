@@ -30,7 +30,12 @@ describe('CreateContactDto', () => {
     const errorFields = errors.map((error) => error.property);
 
     expect(errorFields).toEqual(
-      expect.arrayContaining(['firstName', 'email', 'message', 'applicationId']),
+      expect.arrayContaining([
+        'firstName',
+        'email',
+        'message',
+        'applicationId',
+      ]),
     );
   });
 });
