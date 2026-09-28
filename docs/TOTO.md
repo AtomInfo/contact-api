@@ -1,19 +1,19 @@
-# Contact API V1 — Endpoint TODO
+# Contact API V1 — Endpoint Status
 
 > Base URL: `/api/v1`
 
-## 1. Health & System
+## Implemented endpoints
 
-* [ ] `GET /health` — Check API health/status
-* [ ] `GET /version` — Get API version information
+### 1. Health & System
 
----
+* [x] `GET /health` — Check API health/status
+* [x] `GET /version` — Get API version information
 
-## 2. Contact Messages
+### 2. Contact Messages
 
-### Public Contact Submission
+#### Public Contact Submission
 
-* [x] `POST /contacts` — Submit a new contact message (implemented, in-memory storage)
+* [x] `POST /contacts` — Submit a new contact message
 
   * [x] Validate `firstName`
   * [x] Validate `lastName`
@@ -25,26 +25,30 @@
   * [x] Store submission in PostgreSQL (using Prisma)
   * [x] Apply rate limiting (prevent duplicate within 60s)
 
+---
+
+## Next up / still to build
+
 ### Contact Management
 
-* [ ] `GET /contacts` — List contact messages
+* [x] `GET /contacts` — List contact messages
 
-  * [ ] Pagination
-  * [ ] Filter by `applicationId`
-  * [ ] Filter by `status`
-  * [ ] Filter by `email`
-  * [ ] Search by name/email/message
-  * [ ] Sort by creation date
+  * [x] Pagination (response: `{ data, total, page, limit }`, max `limit` 100)
+  * [x] Filter by `applicationId`
+  * [x] Filter by `status`
+  * [x] Filter by `email`
+  * [x] Search by name/email/message
+  * [x] Sort by creation date / updated date / status / email / applicationId
 
-* [ ] `GET /contacts/:id` — Get a single contact message
+* [x] `GET /contacts/:id` — Get a single contact message (404 if missing)
 
-* [ ] `PATCH /contacts/:id` — Update a contact message
+* [x] `PATCH /contacts/:id` — Update a contact message
 
-  * [ ] Update status
-  * [ ] Update contact information where appropriate
-  * [ ] Update metadata where appropriate
+  * [x] Update status
+  * [x] Update contact information where appropriate
+  * [x] Update metadata where appropriate
 
-* [ ] `DELETE /contacts/:id` — Delete a contact message
+* [x] `DELETE /contacts/:id` — Delete a contact message (404 if missing)
 
 ---
 
@@ -60,13 +64,13 @@ RESOLVED
 SPAM
 ```
 
-* [ ] Validate status transitions
-* [ ] Prevent invalid status values
+* [x] Validate status transitions through service payload validation
+* [x] Prevent invalid status values
 * [ ] Add endpoint for status-only updates if needed:
 
   * [ ] `PATCH /contacts/:id/status`
 
-> Initially, status changes can be handled through `PATCH /contacts/:id`.
+> Status changes are currently handled through `PATCH /contacts/:id` and validated at the service boundary.
 > A dedicated status endpoint can be added later if the workflow requires it.
 
 ---
@@ -81,6 +85,15 @@ Applications should authenticate when submitting contact messages.
 * [ ] Reject inactive/invalid applications
 * [ ] Prevent clients from manually setting `applicationId`
 * [ ] Add API key rotation support
+
+### Reintroduce `APP_API_KEYS`
+
+* [ ] Re-add `APP_API_KEYS` environment-based app secret lookup for contact submission
+* [ ] Document required env format: `{ "app-id": "secret-key" }`
+* [ ] Validate the submitted `applicationId` matches the configured app secret
+* [ ] Add a test for missing/mismatched API keys when the feature is reintroduced
+
+> This feature is intentionally deferred for now and should be reintroduced as a dedicated auth enhancement after the current CRUD/API work is stabilized.
 
 ### Authentication Flow
 
@@ -140,7 +153,7 @@ DELETE /contacts/:id
 
 ## 7. Security & Reliability
 
-* [ ] Enable global request validation
+* [x] Enable global request validation
 * [ ] Configure rate limiting
 * [ ] Add request size limits
 * [ ] Sanitize/validate metadata
@@ -185,11 +198,11 @@ Swagger endpoint:
 * [ ] Test metadata
 * [ ] Test invalid metadata
 * [ ] Test default `NEW` status
-* [ ] Test retrieving contacts
-* [ ] Test filtering
-* [ ] Test pagination
-* [ ] Test updating status
-* [ ] Test deleting contact
+* [x] Test retrieving contacts
+* [x] Test filtering
+* [x] Test pagination
+* [x] Test updating status
+* [x] Test deleting contact
 
 ### Authentication
 
@@ -205,7 +218,7 @@ Swagger endpoint:
 * [ ] Test rate limiting
 * [ ] Test oversized requests
 * [ ] Test unauthorized access
-* [ ] Test malformed requests
+* [x] Test malformed requests
 
 ---
 

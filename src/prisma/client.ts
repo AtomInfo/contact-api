@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-
 // Use CommonJS require to load the runtime client synchronously.
 // Prefer the local generated client (compiled into `dist/generated/prisma`),
 // but fall back to the installed runtime in `node_modules` when the generated
@@ -14,10 +13,8 @@ dotenv.config();
 // installed runtime in `node_modules`.
 let PrismaPkg: any;
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   PrismaPkg = require('../../generated/prisma/client');
-} catch (e) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+} catch {
   PrismaPkg = require('@prisma/client');
 }
 
@@ -32,16 +29,13 @@ export const prisma = adapter
   : new PrismaPkg.PrismaClient();
 
 if (!process.env.DATABASE_URL) {
-  // eslint-disable-next-line no-console
   console.warn(
     'DATABASE_URL not set. Prisma client created without adapter; database calls will fail at runtime if attempted.',
   );
 }
 
-process.on('SIGINT', async () => {
-  try {
-    await prisma.$disconnect();
-  } finally {
+process.on('SIGINT', () => {
+  void prisma.$disconnect().finally(() => {
     process.exit(0);
-  }
+  });
 });
